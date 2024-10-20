@@ -148,7 +148,7 @@ function App() {
 
   // File Upload Page
   const FileUploadPage = () => (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-gray-200 to-gray-400 p-6">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-blue-950 p-6">
       <form
         onSubmit={handleSubmit}
         className="bg-white shadow-2xl rounded-2xl p-8 max-w-lg w-full flex flex-col items-center"
