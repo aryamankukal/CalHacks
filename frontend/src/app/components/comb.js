@@ -65,18 +65,18 @@ function App() {
 
   // Spinner Screen Component
   const SpinnerScreen = () => (
-    <div className="bg-blue-900 min-h-screen flex items-center justify-center">
+    <div className="bg-blue-950 min-h-screen flex items-center justify-center">
       <div className="animate-spin h-12 w-12 border-4 border-white border-t-transparent rounded-full"></div>
     </div>
   );
 
   // Progress Page Component
   const ProgressPage = () => (
-    <div className="bg-blue-900 min-h-screen flex flex-col justify-between text-white">
+    <div className="bg-blue-950 min-h-screen flex flex-col justify-between text-white">
       {/* Header */}
       <header className="text-left p-6">
-        <h1 className="text-4xl font-bold text-teal-300">I am a college student</h1>
-        <h2 className="text-2xl font-semibold text-teal-300 mt-2">Teach me about vectors</h2>
+        <h1 className="text-4xl font-bold text-teal-300">Attention is All You Need</h1>
+        {/* <h2 className="text-2xl font-semibold text-teal-300 mt-2">Teach me about vectors</h2> */}
       </header>
 
       {/* Main Content */}
@@ -90,7 +90,7 @@ function App() {
         {/* Conditional Question Box */}
         {currentQuestion > 0 && (
           <motion.div
-            className={`bg-gray-800 p-4 w-3/4 ml-8 rounded-lg border ${
+            className={`bg-blue-950 p-4 w-3/4 ml-8 rounded-lg border ${
               answeredCorrectly ? 'border-green-400 bg-green-600' : 'border-teal-400'
             }`}
             animate={answeredCorrectly ? { opacity: [0.6, 1, 0.6] } : {}}
@@ -118,7 +118,7 @@ function App() {
                   type="text"
                   value={answer}
                   placeholder="Type your answer..."
-                  className="w-full p-2 mt-4 text-white bg-gray-700 rounded-lg border border-teal-300"
+                  className="w-full p-2 mt-4 text-white bg-blue-950 rounded-lg border border-teal-300"
                   onChange={(e) => setAnswer(e.target.value)}
                   onKeyDown={handleKeyPress} // Fix for key down
                 />
