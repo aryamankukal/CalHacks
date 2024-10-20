@@ -162,6 +162,9 @@ function App() {
 
   const FileUploadPage = () => (
     <div className="flex flex-col items-center justify-center min-h-screen bg-blue-950 p-6">
+      <h1 className="text-6xl font-bold text-white mb-12" style={{ fontFamily: 'Orbitron, sans-serif' }}>
+        scholora.ai
+      </h1>
       <div className="flex justify-center w-full gap-6">
         <form
           onSubmit={handleSubmit}
