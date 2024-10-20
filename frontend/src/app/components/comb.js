@@ -30,6 +30,7 @@ function App() {
   const [searchResults, setSearchResults] = useState([]);
   const [selectedPaper, setSelectedPaper] = useState(null);
   const [showQuestion, setShowQuestion] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
   const videoRef = useRef(null);
 
   const handleFileChange = (e) => {
@@ -57,7 +58,8 @@ function App() {
 
   const handleKeyPress = useCallback((e) => {
     if (e.key === 'Enter' && answer.trim() !== '') {
-      setAnsweredCorrectly(true);
+      const correctAnswer = "self-attention";
+      setAnsweredCorrectly(answer.toLowerCase().includes(correctAnswer));
       setTimeout(() => {
         setAnsweredCorrectly(false);
         setAnswer('');
@@ -107,42 +109,75 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (showProgressPage) {
+      setTimeout(() => {
+        setShowVideo(true);
+      }, 5000);
+    }
+  }, [showProgressPage]);
+
   const SpinnerScreen = () => (
     <div className="bg-blue-950 min-h-screen flex items-center justify-center">
       <div className="animate-spin h-12 w-12 border-4 border-white border-t-transparent rounded-full"></div>
     </div>
   );
 
+  const LoadingAnimation = () => (
+    <div className="flex justify-center items-center w-1/2 h-64">
+      {[...Array(10)].map((_, index) => (
+        <motion.div
+          key={index}
+          className="w-1 h-16 bg-teal-300 mx-1"
+          animate={{
+            height: [64, 16, 64],
+            transition: {
+              duration: 1,
+              repeat: Infinity,
+              delay: index * 0.1,
+            },
+          }}
+        />
+      ))}
+    </div>
+  );
+
   const ProgressPage = () => (
     <div className="bg-blue-950 min-h-screen flex flex-col justify-between text-white">
       <header className="text-left p-6">
-        <h1 className="text-4xl font-bold text-teal-300">Attention is All You Need</h1>
+        <h1 className="text-5xl font-bold text-teal-300 mb-2">Attention is All You Need</h1>
+        <h2 className="text-2xl font-semibold text-teal-100">Vaswani et al.</h2>
       </header>
       <div className="flex justify-between items-center p-6">
-        <div className="flex justify-center items-center w-1/2">
-          <video
-            ref={videoRef}
-            src="/NeuralNetworkScene@2024-10-20@06-25-43 (1).mov"
-            className="w-full"
-            autoPlay
-            onError={(e) => console.error("Video error:", e)}
-          >
-            Your browser does not support the video tag.
-          </video>
-        </div>
+        {showVideo ? (
+          <div className="flex justify-center items-center w-1/2">
+            <video
+              ref={videoRef}
+              src="/NeuralNetworkScene@2024-10-20@06-25-43 (1).mov"
+              className="w-full rounded-lg shadow-xl"
+              autoPlay
+              onEnded={handleVideoEnd}
+              onError={(e) => console.error("Video error:", e)}
+            >
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        ) : (
+          <LoadingAnimation />
+        )}
         <AnimatePresence>
           {showQuestion && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className={`bg-blue-950 p-4 w-3/4 ml-8 rounded-lg border ${
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 100 }}
+              transition={{ duration: 0.5 }}
+              className={`bg-blue-950 p-4 w-1/2 ml-8 rounded-lg border ${
                 answeredCorrectly ? 'border-green-400 bg-green-600' : 'border-teal-400'
               }`}
-              style={{ height: '150px' }}
             >
               <p className="text-base mt-2">
-                If Vector1 had a magnitude of 10 and the second vector had a magnitude of 5, what will the resultant vector's magnitude be on the assumption that Vector1 and Vector2 are at a 0-degree angle?
+                What is the key innovation introduced in the "Attention is All You Need" paper that allows the model to process input sequences in parallel?
               </p>
               <input
                 type="text"
