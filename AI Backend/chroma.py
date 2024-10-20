@@ -11,7 +11,7 @@ chroma_client = chromadb.Client()
 # Use OpenAI's embedding function (ensure you have an API key for this)
 # Replace 'YOUR_OPENAI_API_KEY' with your actual API key
 embedding_function = embedding_functions.OpenAIEmbeddingFunction(
-    api_key='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',
+    api_key='OPENAI_API_KEY',
     model_name="text-embedding-ada-002"
 )
 

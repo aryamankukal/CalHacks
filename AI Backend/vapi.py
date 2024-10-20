@@ -1,6 +1,6 @@
 from vapi_python import Vapi
 
-vapi = Vapi(api_key='3661f60f-c3ea-4dfd-acf5-f4d302258e7a')
+vapi = Vapi(api_key='VAPI_API_KEY')
 
 assistant = {
   'firstMessage': 'Would you like to start?',
