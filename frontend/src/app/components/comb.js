@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion'; // For animation
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion'; // For animation
 
 // Hardcoded database of papers
 const paperDatabase = [
@@ -24,12 +24,13 @@ function App() {
   const [showSpinner, setShowSpinner] = useState(false);
   const [showProgressPage, setShowProgressPage] = useState(false);
   const [progress, setProgress] = useState(30);
-  const [currentQuestion, setCurrentQuestion] = useState(1);
   const [answer, setAnswer] = useState('');
   const [answeredCorrectly, setAnsweredCorrectly] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [selectedPaper, setSelectedPaper] = useState(null);
+  const [showQuestion, setShowQuestion] = useState(false);
+  const videoRef = useRef(null);
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -59,15 +60,10 @@ function App() {
       setAnsweredCorrectly(true);
       setTimeout(() => {
         setAnsweredCorrectly(false);
-        if (currentQuestion === 1) {
-          setCurrentQuestion(2);
-        } else if (currentQuestion === 2) {
-          setTimeout(() => setCurrentQuestion(0), 3000);
-        }
         setAnswer('');
       }, 1500);
     }
-  }, [answer, currentQuestion]);
+  }, [answer]);
 
   const handleSearch = (e) => {
     const term = e.target.value.toLowerCase();
@@ -90,6 +86,24 @@ function App() {
     }
   };
 
+  const handleVideoEnd = () => {
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
+    setShowQuestion(true);
+  };
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.addEventListener('ended', handleVideoEnd);
+    }
+    return () => {
+      if (videoRef.current) {
+        videoRef.current.removeEventListener('ended', handleVideoEnd);
+      }
+    };
+  }, []);
+
   const SpinnerScreen = () => (
     <div className="bg-blue-950 min-h-screen flex items-center justify-center">
       <div className="animate-spin h-12 w-12 border-4 border-white border-t-transparent rounded-full"></div>
@@ -103,46 +117,41 @@ function App() {
       </header>
       <div className="flex justify-between items-center p-6">
         <div className="flex justify-center items-center w-1/2">
-          <img src="vectors.svg" alt="Vector Visualization" className="w-1/2" />
-        </div>
-        {currentQuestion > 0 && (
-          <motion.div
-            className={`bg-blue-950 p-4 w-3/4 ml-8 rounded-lg border ${
-              answeredCorrectly ? 'border-green-400 bg-green-600' : 'border-teal-400'
-            }`}
-            animate={answeredCorrectly ? { opacity: [0.6, 1, 0.6] } : {}}
-            transition={{ duration: 1 }}
-            style={{ height: '150px' }}
+          <video
+            ref={videoRef}
+            src="/NeuralNetworkScene@2024-10-20@06-25-43 (1).mov"
+            className="w-full"
+            autoPlay
+            onError={(e) => console.error("Video error:", e)}
           >
-            {currentQuestion === 1 ? (
-              <>
-                <p className="text-base mt-2">
-                  If Vector1 had a magnitude of 10 and the second vector had a magnitude of 5, what will the resultant vector's magnitude be on the assumption that Vector1 and Vector2 are at a 0-degree angle?
-                </p>
-                <input
-                  type="text"
-                  value={answer}
-                  placeholder="Type your answer..."
-                  className="w-full p-2 mt-4 text-white bg-gray-700 rounded-lg border border-teal-300"
-                  onChange={handleAnswerChange}
-                  onKeyDown={handleKeyPress}
-                />
-              </>
-            ) : currentQuestion === 2 ? (
-              <>
-                <p className="text-base mt-2">How are you?</p>
-                <input
-                  type="text"
-                  value={answer}
-                  placeholder="Type your answer..."
-                  className="w-full p-2 mt-4 text-white bg-blue-950 rounded-lg border border-teal-300"
-                  onChange={handleAnswerChange}
-                  onKeyDown={handleKeyPress}
-                />
-              </>
-            ) : null}
-          </motion.div>
-        )}
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <AnimatePresence>
+          {showQuestion && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className={`bg-blue-950 p-4 w-3/4 ml-8 rounded-lg border ${
+                answeredCorrectly ? 'border-green-400 bg-green-600' : 'border-teal-400'
+              }`}
+              style={{ height: '150px' }}
+            >
+              <p className="text-base mt-2">
+                If Vector1 had a magnitude of 10 and the second vector had a magnitude of 5, what will the resultant vector's magnitude be on the assumption that Vector1 and Vector2 are at a 0-degree angle?
+              </p>
+              <input
+                type="text"
+                value={answer}
+                placeholder="Type your answer..."
+                className="w-full p-2 mt-4 text-white bg-gray-700 rounded-lg border border-teal-300"
+                onChange={handleAnswerChange}
+                onKeyDown={handleKeyPress}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
       <footer className="p-6 flex justify-center items-center">
         <div className="w-full max-w-4xl flex justify-between">
