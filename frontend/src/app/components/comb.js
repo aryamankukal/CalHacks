@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion'; // For animation
+import axios from 'axios'; // Import axios for making API calls
 
 // Hardcoded database of papers
 const paperDatabase = [
@@ -17,13 +18,38 @@ const paperDatabase = [
   "ZeRO: Memory Optimizations Toward Training Trillion Parameter Models"
 ];
 
+const Header = () => (
+  <header className="text-center p-6">
+    <h1 className="text-5xl font-bold text-teal-300 mb-2">Attention is All You Need</h1>
+    <h2 className="text-2xl font-semibold text-teal-100">Vaswani et al.</h2>
+  </header>
+);
+
+const Footer = ({ progress }) => (
+  <footer className="p-6 flex justify-center items-center">
+    <div className="w-full max-w-4xl flex justify-between">
+      {['Prerequisites', 'Knowledge Map', 'Attention', 'FNNs', 'Embeddings'].map((label, index) => (
+        <div
+          key={index}
+          className={`h-8 w-full bg-teal-400 mx-1 rounded-full transition-all duration-300 flex items-center justify-center`}
+          style={{
+            opacity: progress >= (index + 1) * 20 ? 1 : 0.3,
+          }}
+        >
+          <span className="text-white text-sm font-semibold px-2">{label}</span>
+        </div>
+      ))}
+    </div>
+  </footer>
+);
+
 function App() {
   const [file, setFile] = useState(null);
   const [fileUrl, setFileUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showSpinner, setShowSpinner] = useState(false);
   const [showProgressPage, setShowProgressPage] = useState(false);
-  const [progress, setProgress] = useState(30);
+  const [progress, setProgress] = useState(20);
   const [answer, setAnswer] = useState('');
   const [answeredCorrectly, setAnsweredCorrectly] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -36,6 +62,7 @@ function App() {
   const [questionNumber, setQuestionNumber] = useState(1);
   const [showWaveAnimation, setShowWaveAnimation] = useState(false);
   const videoRef = useRef(null);
+  const [currentPage, setCurrentPage] = useState('fileUpload'); // Track current page
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -55,39 +82,29 @@ function App() {
     setIsLoading(true);
     setTimeout(() => {
       setShowSpinner(false);
-      setShowProgressPage(true);
+      setShowProgressPage(false); // Ensure this is set to false
+      setCurrentPage('prereqPage'); // Set to PrereqPage after upload
       setIsLoading(false);
     }, 2000);
   };
 
-  const handleKeyPress = useCallback((e) => {
-    if (e.key === 'Enter' && answer.trim() !== '') {
-      const correctAnswer = "self-attention";
-      setAnsweredCorrectly(answer.toLowerCase().includes(correctAnswer));
-      setShowWaveAnimation(true);
-      setTimeout(() => {
-        setShowWaveAnimation(false);
-        setAnsweredCorrectly(false);
-        setAnswer('');
-        if (questionNumber === 1) {
-          setCurrentVideoSrc("/token (online-video-cutter.com).mp4");
-          setCurrentQuestion("What is the purpose of multi-head attention in the Transformer architecture?");
-          setQuestionNumber(2);
-          setShowVideo(true);
-          setShowQuestion(true);
-        } else if (questionNumber === 2) {
-          setCurrentVideoSrc("/MatrixVectorMultiplication@2024-10-20@08-38-42.mov");
-          setCurrentQuestion("How does the Transformer model handle variable-length input sequences?");
-          setQuestionNumber(3);
-          setShowVideo(true);
-          setShowQuestion(false);
-          setTimeout(() => {
-            setShowQuestion(true);
-          }, 1000); // Adjust this delay as needed
-        }
-      }, 1500);
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      if (progress >= 20 && progress < 40) {
+        setCurrentPage('knowledgeMap'); // Move to Knowledge Map page
+        setProgress(40);
+      } else if (progress >= 40 && progress < 60) {
+        setCurrentPage('attention'); // Move to Attention page
+        setProgress(60);
+      } else if (progress >= 60 && progress < 80) {
+        setCurrentPage('fnn'); // Move to FNN page
+        setProgress(80);
+      } else if (progress >= 80) {
+        setCurrentPage('embedding'); // Move to Embedding page
+        setProgress(100);
+      }
     }
-  }, [answer, questionNumber]);
+  };
 
   const handleSearch = (e) => {
     const term = e.target.value.toLowerCase();
@@ -164,76 +181,111 @@ function App() {
     </div>
   );
 
-  const ProgressPage = () => (
-    <div className="bg-blue-950 min-h-screen flex flex-col justify-between text-white">
-      <header className="text-left p-6">
-        <h1 className="text-5xl font-bold text-teal-300 mb-2">Attention is All You Need</h1>
-        <h2 className="text-2xl font-semibold text-teal-100">Vaswani et al.</h2>
-      </header>
-      <div className="flex justify-between items-center p-6">
-        {showVideo && (
-          <div className="flex justify-center items-center w-1/2">
-            <video
-              ref={videoRef}
-              src={currentVideoSrc}
-              className="w-full rounded-lg shadow-xl"
-              autoPlay
-              onEnded={handleVideoEnd}
-              onError={(e) => console.error("Video error:", e)}
-            >
-              Your browser does not support the video tag.
-            </video>
-          </div>
-        )}
-        {!showVideo && <LoadingAnimation />}
-        <AnimatePresence>
-          {showQuestion && (
-            <motion.div
-              initial={{ opacity: 0, x: 100 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 100 }}
-              transition={{ duration: 0.5 }}
-              className={`bg-blue-950 p-4 w-1/2 ml-8 rounded-lg border ${
-                showWaveAnimation ? 'border-green-400 bg-green-600' : 'border-teal-400'
-              }`}
-            >
-              <p className="text-base mt-2">
-                {currentQuestion}
-              </p>
-              <motion.div
-                animate={showWaveAnimation ? {
-                  background: ['linear-gradient(90deg, #4ade80 0%, #4ade80 100%)', 'linear-gradient(90deg, #4ade80 0%, #4ade80 0%)'],
-                } : {}}
-                transition={{ duration: 1, ease: "easeInOut" }}
-              >
-                <input
-                  type="text"
-                  value={answer}
-                  placeholder="Type your answer..."
-                  className="w-full p-2 mt-4 text-white bg-gray-700 rounded-lg border border-teal-300"
-                  onChange={handleAnswerChange}
-                  onKeyDown={handleKeyPress}
-                />
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-      <footer className="p-6 flex justify-center items-center">
-        <div className="w-full max-w-4xl flex justify-between">
-          {['Prerequisites', 'Knowledge Map', 'Attention', 'FNNs', 'Embeddings'].map((label, index) => (
-            <div
-              key={index}
-              className={`h-8 w-full bg-teal-400 mx-1 rounded-full transition-all duration-300 flex items-center justify-center`}
-              style={{
-                opacity: progress >= (index + 1) * 20 ? 1 : 0.3,
-              }}
-            >
-              <span className="text-white text-sm font-semibold px-2">{label}</span>
-            </div>
-          ))}
+  const PrereqPage = () => (
+    <div 
+        className="bg-blue-950 min-h-screen flex flex-col justify-between text-white"
+        tabIndex={0} // Make the div focusable to capture key events
+        onKeyDown={handleKeyPress} // Attach the key press handler
+    >
+        <header className="text-center p-6">
+            <h1 className="text-5xl font-bold text-teal-300 mb-2">Attention is All You Need</h1>
+            <h2 className="text-2xl font-semibold text-teal-100">Vaswani et al.</h2>
+        </header>
+        <div className="flex justify-between items-center p-6">
+            {/* Commenting out the video and question sections for now */}
+            {/* {showVideo && (
+                <div className="flex justify-center items-center w-1/2">
+                    <video
+                        ref={videoRef}
+                        src={currentVideoSrc}
+                        className="w-full rounded-lg shadow-xl"
+                        autoPlay
+                        onEnded={handleVideoEnd}
+                        onError={(e) => console.error("Video error:", e)}
+                    >
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            )}
+            {!showVideo && <LoadingAnimation />}
+            <AnimatePresence>
+                {showQuestion && (
+                    <motion.div
+                        initial={{ opacity: 0, x: 100 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 100 }}
+                        transition={{ duration: 0.5 }}
+                        className={`bg-blue-950 p-4 w-1/2 ml-8 rounded-lg border ${
+                            showWaveAnimation ? 'border-green-400 bg-green-600' : 'border-teal-400'
+                        }`}
+                    >
+                        <p className="text-base mt-2">
+                            {currentQuestion}
+                        </p>
+                        <motion.div
+                            animate={showWaveAnimation ? {
+                                background: ['linear-gradient(90deg, #4ade80 0%, #4ade80 100%)', 'linear-gradient(90deg, #4ade80 0%, #4ade80 0%)'],
+                            } : {}}
+                            transition={{ duration: 1, ease: "easeInOut" }}
+                        >
+                            <input
+                                type="text"
+                                value={answer}
+                                placeholder="Type your answer..."
+                                className="w-full p-2 mt-4 text-white bg-gray-700 rounded-lg border border-teal-300"
+                                onChange={handleAnswerChange}
+                                onKeyDown={handleKeyPress}
+                            />
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence> */}
         </div>
-      </footer>
+        <footer className="p-6 flex justify-center items-center">
+            <div className="w-full max-w-4xl flex justify-between">
+                {['Prerequisites', 'Knowledge Map', 'Attention', 'FNNs', 'Embeddings'].map((label, index) => (
+                    <div
+                        key={index}
+                        className={`h-8 w-full bg-teal-400 mx-1 rounded-full transition-all duration-300 flex items-center justify-center`}
+                        style={{
+                            opacity: progress >= (index + 1) * 20 ? 1 : 0.3,
+                        }}
+                    >
+                        <span className="text-white text-sm font-semibold px-2">{label}</span>
+                    </div>
+                ))}
+            </div>
+        </footer>
+    </div>
+  );
+
+  const KnowledgeMap = () => (
+    <div className="flex flex-col justify-between min-h-screen bg-blue-950"
+    tabIndex={0} // Make the div focusable to capture key events
+        onKeyDown={handleKeyPress} // Attach the key press handler
+    >
+        <header className="text-center p-6">
+            <h1 className="text-5xl font-bold text-teal-300 mb-2">Attention is All You Need</h1>
+            <h2 className="text-2xl font-semibold text-teal-100">Vaswani et al.</h2>
+        </header>
+        <div className="flex justify-center items-center flex-grow"> {/* Use flex-grow to center the iframe */}
+            <iframe style={{ border: 'none' }} width="800" height="450" src="https://whimsical.com/embed/hNiv6Kf72QGC69RSkgitz"></iframe>
+        </div>
+        <footer className="p-6 flex justify-center items-center">
+            <div className="w-full max-w-4xl flex justify-between">
+                {['Prerequisites', 'Knowledge Map', 'Attention', 'FNNs', 'Embeddings'].map((label, index) => (
+                    <div
+                        key={index}
+                        className={`h-8 w-full bg-teal-400 mx-1 rounded-full transition-all duration-300 flex items-center justify-center`}
+                        style={{
+                            opacity: progress >= (index + 1) * 20 ? 1 : 0.3,
+                        }}
+                    >
+                        <span className="text-white text-sm font-semibold px-2">{label}</span>
+                    </div>
+                ))}
+            </div>
+        </footer>
     </div>
   );
 
@@ -315,12 +367,99 @@ function App() {
     </div>
   );
 
+  const AttentionPage = () => (
+    <div className="flex flex-col justify-between min-h-screen bg-blue-950"
+    tabIndex={0} // Make the div focusable to capture key events
+        onKeyDown={handleKeyPress} // Attach the key press handler
+    >
+        <Header />
+        <div className="flex justify-center items-center flex-grow flex-col">
+            <p className="text-white mb-4">This page explains the attention mechanism in neural networks.</p>
+            <div className="flex">
+                <button onClick={startVoicebot} className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg mr-4">
+                    Start Voicebot
+                </button>
+            </div>
+        </div>
+        <Footer progress={progress} />
+    </div>
+  );
+
+  const FNNPage = () => {
+    return ( // Added return statement
+      <div className="flex flex-col justify-between min-h-screen bg-blue-950"
+      tabIndex={0} // Make the div focusable to capture key events
+        onKeyDown={handleKeyPress} // Attach the key press handler
+      >
+        <Header />
+        <div className="flex justify-center items-center flex-grow flex-col">
+          <p className="text-white mb-4">This page explains feedforward neural networks.</p>
+        </div>
+        <Footer progress={progress} />
+      </div>
+    ); // End of return statement
+  };
+
+  const EmbeddingPage = () => {
+    return ( // Added return statement
+      <div className="flex flex-col justify-between min-h-screen bg-blue-950" 
+      tabIndex={0} // Make the div focusable to capture key events
+        onKeyDown={handleKeyPress} // Attach the key press handler
+      >
+        <Header />
+        <div className="flex justify-center items-center flex-grow flex-col">
+          <p className="text-white mb-4">This page explains embeddings in machine learning.</p>
+          <div className="flex">
+            <button onClick={stopVoicebot} className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg">
+              Stop Voicebot
+            </button>
+          </div>
+        </div>
+        <Footer progress={progress} />
+      </div>
+    ); // End of return statement
+  };
+
+  // Function to start the voicebot
+  const startVoicebot = async () => {
+    try {
+        await axios.post('http://localhost:5001/api/start-voicebot'); // Updated to use localhost
+    } catch (error) {
+        console.error('Error starting voicebot:', error);
+    }
+};
+
+  // Function to stop the voicebot
+  const stopVoicebot = async () => {
+    try {
+        await axios.post('http://localhost:5001/api/stop-voicebot'); // Updated to use localhost
+    } catch (error) {
+        console.error('Error stopping voicebot:', error);
+    }
+};
+
+  // Automatically focus on the PrereqPage when it mounts
+  useEffect(() => {
+    const prereqPage = document.querySelector('.bg-blue-950');
+    if (prereqPage) {
+        prereqPage.focus();
+    }
+  }, []);
+
   return (
     <>
       {showSpinner ? (
         <SpinnerScreen />
-      ) : showProgressPage ? (
-        <ProgressPage />
+      ) : currentPage === 'prereqPage' ? (
+        <PrereqPage />
+      ) : currentPage === 'knowledgeMap' ? (
+        <KnowledgeMap />
+      ) : currentPage === 'attention' ? (
+        <AttentionPage/>
+      ) : currentPage === 'fnn' ? (
+        <FNNPage/>
+      ) : currentPage === 'embedding' ? (
+        <EmbeddingPage/>
       ) : (
         <FileUploadPage />
       )}
