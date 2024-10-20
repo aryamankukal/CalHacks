@@ -86,7 +86,10 @@ function App() {
     setSelectedPaper(paper);
     if (paper === "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding") {
       setFile(new File([], "bert.pdf"));
-      setFileUrl("/components/bert.pdf");
+      setFileUrl("/bert.pdf");
+    } else if(paper == "Attention Is All You Need") {
+      setFile(new File([], "attention.pdf"));
+      setFileUrl("/attention.pdf");
     }
   };
 
