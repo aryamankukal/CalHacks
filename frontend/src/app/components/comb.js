@@ -31,6 +31,10 @@ function App() {
   const [selectedPaper, setSelectedPaper] = useState(null);
   const [showQuestion, setShowQuestion] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
+  const [currentVideoSrc, setCurrentVideoSrc] = useState("/NeuralNetworkScene@2024-10-20@06-25-43 (1).mov");
+  const [currentQuestion, setCurrentQuestion] = useState("What is the key innovation introduced in the \"Attention is All You Need\" paper that allows the model to process input sequences in parallel?");
+  const [questionNumber, setQuestionNumber] = useState(1);
+  const [showWaveAnimation, setShowWaveAnimation] = useState(false);
   const videoRef = useRef(null);
 
   const handleFileChange = (e) => {
@@ -60,12 +64,30 @@ function App() {
     if (e.key === 'Enter' && answer.trim() !== '') {
       const correctAnswer = "self-attention";
       setAnsweredCorrectly(answer.toLowerCase().includes(correctAnswer));
+      setShowWaveAnimation(true);
       setTimeout(() => {
+        setShowWaveAnimation(false);
         setAnsweredCorrectly(false);
         setAnswer('');
+        if (questionNumber === 1) {
+          setCurrentVideoSrc("/token (online-video-cutter.com).mp4");
+          setCurrentQuestion("What is the purpose of multi-head attention in the Transformer architecture?");
+          setQuestionNumber(2);
+          setShowVideo(true);
+          setShowQuestion(true);
+        } else if (questionNumber === 2) {
+          setCurrentVideoSrc("/MatrixVectorMultiplication@2024-10-20@08-38-42.mov");
+          setCurrentQuestion("How does the Transformer model handle variable-length input sequences?");
+          setQuestionNumber(3);
+          setShowVideo(true);
+          setShowQuestion(false);
+          setTimeout(() => {
+            setShowQuestion(true);
+          }, 1000); // Adjust this delay as needed
+        }
       }, 1500);
     }
-  }, [answer]);
+  }, [answer, questionNumber]);
 
   const handleSearch = (e) => {
     const term = e.target.value.toLowerCase();
@@ -149,11 +171,11 @@ function App() {
         <h2 className="text-2xl font-semibold text-teal-100">Vaswani et al.</h2>
       </header>
       <div className="flex justify-between items-center p-6">
-        {showVideo ? (
+        {showVideo && (
           <div className="flex justify-center items-center w-1/2">
             <video
               ref={videoRef}
-              src="/NeuralNetworkScene@2024-10-20@06-25-43 (1).mov"
+              src={currentVideoSrc}
               className="w-full rounded-lg shadow-xl"
               autoPlay
               onEnded={handleVideoEnd}
@@ -162,9 +184,8 @@ function App() {
               Your browser does not support the video tag.
             </video>
           </div>
-        ) : (
-          <LoadingAnimation />
         )}
+        {!showVideo && <LoadingAnimation />}
         <AnimatePresence>
           {showQuestion && (
             <motion.div
@@ -173,34 +194,43 @@ function App() {
               exit={{ opacity: 0, x: 100 }}
               transition={{ duration: 0.5 }}
               className={`bg-blue-950 p-4 w-1/2 ml-8 rounded-lg border ${
-                answeredCorrectly ? 'border-green-400 bg-green-600' : 'border-teal-400'
+                showWaveAnimation ? 'border-green-400 bg-green-600' : 'border-teal-400'
               }`}
             >
               <p className="text-base mt-2">
-                What is the key innovation introduced in the "Attention is All You Need" paper that allows the model to process input sequences in parallel?
+                {currentQuestion}
               </p>
-              <input
-                type="text"
-                value={answer}
-                placeholder="Type your answer..."
-                className="w-full p-2 mt-4 text-white bg-gray-700 rounded-lg border border-teal-300"
-                onChange={handleAnswerChange}
-                onKeyDown={handleKeyPress}
-              />
+              <motion.div
+                animate={showWaveAnimation ? {
+                  background: ['linear-gradient(90deg, #4ade80 0%, #4ade80 100%)', 'linear-gradient(90deg, #4ade80 0%, #4ade80 0%)'],
+                } : {}}
+                transition={{ duration: 1, ease: "easeInOut" }}
+              >
+                <input
+                  type="text"
+                  value={answer}
+                  placeholder="Type your answer..."
+                  className="w-full p-2 mt-4 text-white bg-gray-700 rounded-lg border border-teal-300"
+                  onChange={handleAnswerChange}
+                  onKeyDown={handleKeyPress}
+                />
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
       <footer className="p-6 flex justify-center items-center">
         <div className="w-full max-w-4xl flex justify-between">
-          {[1, 2, 3, 4, 5].map((chunk, index) => (
+          {['Prerequisites', 'Knowledge Map', 'Attention', 'FNNs', 'Embeddings'].map((label, index) => (
             <div
               key={index}
-              className={`h-4 w-full bg-teal-400 mx-1 rounded-full transition-all duration-300`}
+              className={`h-8 w-full bg-teal-400 mx-1 rounded-full transition-all duration-300 flex items-center justify-center`}
               style={{
                 opacity: progress >= (index + 1) * 20 ? 1 : 0.3,
               }}
-            ></div>
+            >
+              <span className="text-white text-sm font-semibold px-2">{label}</span>
+            </div>
           ))}
         </div>
       </footer>
