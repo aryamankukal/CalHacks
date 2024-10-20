@@ -5,7 +5,20 @@ import { Slider } from "@/app/components/ui/slider";
 import { motion } from "framer-motion";
 
 export default function Prereq() {
-  const [skill, setSkill] = useState(50);
+  const [skill, setSkill] = useState(40);
+
+  const translateSkill = (s) => {
+    const trans = [
+      "beginner",
+      "novice",
+      "intermediate",
+      "advanced",
+      "master",
+      "i got this bro",
+    ];
+
+    return trans[s / 20];
+  };
 
   return (
     <main className="text-white/60 bg-slate-900 w-screen h-screen px-72 mx-auto pt-40">
@@ -14,13 +27,13 @@ export default function Prereq() {
           <h2 className="text-3xl font-bold">
             My <span className="text-orange-500">skill level</span> is...
           </h2>
-          <p className="text-orange-500">{skill}</p>
+          <p className="text-orange-500">{translateSkill(skill)}</p>
         </div>
         <Slider
           onValueChange={(v) => setSkill(v)}
-          defaultValue={[50]}
+          defaultValue={[40]}
           max={100}
-          step={1}
+          step={20}
         />
       </div>
       {skill !== null ? (
