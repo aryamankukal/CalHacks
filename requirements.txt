@@ -1,0 +1,24 @@
+# Backend dependencies
+Flask==2.0.1
+Flask-CORS==3.0.10
+python-dotenv==0.19.0
+openai==0.27.0
+elevenlabs==0.2.24
+SpeechRecognition==3.8.1
+pyaudio==0.2.11
+pydub==0.25.1
+numpy==1.21.0
+scipy==1.7.0
+sounddevice==0.4.1
+
+# Frontend dependencies (for reference, not installed via pip)
+# These would typically be in package.json for a React app
+# react==17.0.2
+# react-dom==17.0.2
+# axios==0.21.1
+# framer-motion==4.1.17
+
+# Development tools
+pytest==6.2.4
+black==21.6b0
+flake8==3.9.2
